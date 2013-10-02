@@ -73,8 +73,8 @@ public class DecisionTree {
 
                     double trueEntropy = getEntropy(trueLabelCount, trueFeatures.getNumRows());
                     double falseEntropy = getEntropy(falseLabelCount, falseFeatures.getNumRows());
-                    double info = (trueEntropy * (trueFeatures.getNumRows() / features.getNumRows()))
-                            + (falseEntropy * (falseFeatures.getNumRows() / features.getNumRows()));
+                    double info = (trueEntropy * (trueFeatures.getNumRows() / (double) features.getNumRows()))
+                            + (falseEntropy * (falseFeatures.getNumRows() / (double) features.getNumRows()));
 
                     if (info < minInfo) {
                         bestTrueFeatures = trueFeatures;
