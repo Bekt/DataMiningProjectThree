@@ -29,7 +29,7 @@ public class DecisionTree {
         if (n < k) {
             double index = labels.mostCommonValue(0);
             root.label = labels.getColumnAttributes(0).getValue((int) index);
-        } else if (isHomogeneous(labels)) {
+        } else if (isHomogeneous(labels, 0)) {
             double index = labels.getRow(0).get(0);
             root.label = labels.getColumnAttributes(0).getValue((int) index);
         } else {
@@ -99,11 +99,10 @@ public class DecisionTree {
         root.prettyPrint(new StringBuilder(), "");
     }
 
-    private static boolean isHomogeneous(Matrix matrix) {
-        int labelsIndex = matrix.getNumCols() - 1;
-        double val = matrix.getRow(0).get(labelsIndex);
+    private static boolean isHomogeneous(Matrix matrix, int col) {
+        double val = matrix.getRow(0).get(col);
         for (int i = 1; i < matrix.getNumRows(); i++) {
-            if (val != matrix.getRow(i).get(labelsIndex)) {
+            if (val != matrix.getRow(i).get(col)) {
                 return false;
             }
         }
