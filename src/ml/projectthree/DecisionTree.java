@@ -1,3 +1,5 @@
+package ml.projectthree;
+
 import ml.ColumnAttributes;
 import ml.MLException;
 import ml.Matrix;
@@ -5,33 +7,38 @@ import ml.Matrix;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import static java.lang.Math.log;
 
 public class DecisionTree {
 
-    DecisionTreeNode root;
+    DecisionTree left, right;
+    String column, value, label;
     int k;
 
     public DecisionTree(Matrix features, Matrix labels, int k) {
         this.k = k;
-        root = buildTree(features, labels);
+        buildTree(features, labels);
     }
 
-    private DecisionTreeNode buildTree(Matrix features, Matrix labels) {
+    public boolean isLeaf() {
+        return left == null && right == null;
+    }
+
+    private void buildTree(Matrix features, Matrix labels) {
 
         if (features.getNumRows() != labels.getNumRows()) {
             throw new MLException("Features and labels must have the same number of rows.");
         }
 
-        DecisionTreeNode root = new DecisionTreeNode();
         int n = features.getNumRows();
 
-        if (n < k) {
+        if (n <= k) {
             double index = labels.mostCommonValue(0);
-            root.label = labels.getColumnAttributes(0).getValue((int) index);
-        } else if (isHomogeneous(labels, 0)) {
+            label = labels.getColumnAttributes(0).getValue((int) index);
+        } else if (labels.isHomogeneous(0)) {
             double index = labels.getRow(0).get(0);
-            root.label = labels.getColumnAttributes(0).getValue((int) index);
+            label = labels.getColumnAttributes(0).getValue((int) index);
         } else {
 
             Matrix bestTrueFeatures = null, bestTrueLabels = null;
@@ -51,7 +58,7 @@ public class DecisionTree {
                     Map<Double, Integer> trueLabelCount = new HashMap<Double, Integer>();
                     Map<Double, Integer> falseLabelCount = new HashMap<Double, Integer>();
 
-                    for (int row = 0; row < features.getNumRows(); row++) {
+                    for (int row = 0; row < n; row++) {
                         double featureVal = features.getRow(row).get(col);
                         double label = labels.getRow(row).get(0);
                         if ((int) featureVal == val) {
@@ -73,8 +80,8 @@ public class DecisionTree {
 
                     double trueEntropy = getEntropy(trueLabelCount, trueFeatures.getNumRows());
                     double falseEntropy = getEntropy(falseLabelCount, falseFeatures.getNumRows());
-                    double info = (trueEntropy * (trueFeatures.getNumRows() / (double) features.getNumRows()))
-                            + (falseEntropy * (falseFeatures.getNumRows() / (double) features.getNumRows()));
+                    double info = (trueEntropy * (trueFeatures.getNumRows() / (double) n))
+                            + (falseEntropy * (falseFeatures.getNumRows() / (double) n));
 
                     if (info < minInfo) {
                         bestTrueFeatures = trueFeatures;
@@ -83,30 +90,15 @@ public class DecisionTree {
                         bestFalseLabels = falseLabels;
                         columnName = column.getName();
                         valueName = column.getValue(val);
+                        minInfo = info;
                     }
                 }
             }
-            root.column = columnName;
-            root.value = valueName;
-            root.left = buildTree(bestTrueFeatures, bestTrueLabels);
-            root.right = buildTree(bestFalseFeatures, bestFalseLabels);
+            column = columnName;
+            value = valueName;
+            left = new DecisionTree(bestTrueFeatures, bestTrueLabels, k);
+            right = new DecisionTree(bestFalseFeatures, bestFalseLabels, k);
         }
-
-        return root;
-    }
-
-    public void prettyPrint() {
-        root.prettyPrint(new StringBuilder(), "");
-    }
-
-    private static boolean isHomogeneous(Matrix matrix, int col) {
-        double val = matrix.getRow(0).get(col);
-        for (int i = 1; i < matrix.getNumRows(); i++) {
-            if (val != matrix.getRow(i).get(col)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static double getEntropy(Map<Double, Integer> labelsCount, int n) {
@@ -119,6 +111,27 @@ public class DecisionTree {
             entropy += (-numer * (log(numer) / LOG_TWO));
         }
         return entropy;
+    }
+
+    public void prettyPrint(StringBuilder buffer, String parent) {
+        for (int i = 0; i + 1 < buffer.length(); i++) {
+            System.out.print(buffer.charAt(i));
+        }
+        System.out.println("|");
+        for (int i = 0; i + 1 < buffer.length(); i++) {
+            System.out.print(buffer.charAt(i));
+        }
+
+        if (isLeaf()) {
+            System.out.println("+" + parent + "->'class'=" + label);
+        } else {
+            System.out.println("+" + parent + "->Is " + column + " == " + value + "?");
+            buffer.append("   |");
+            left.prettyPrint(buffer, "Yes");
+            buffer.setCharAt(buffer.length() - 1, ' ');
+            right.prettyPrint(buffer, "No");
+            buffer.delete(buffer.length() - 4, buffer.length());
+        }
     }
 
 }

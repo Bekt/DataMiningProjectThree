@@ -1,3 +1,5 @@
+package ml.projectthree;
+
 import ml.ARFFParser;
 import ml.Filter;
 import ml.Imputer;
@@ -9,7 +11,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        Matrix matrix = ARFFParser.loadARFF("/Users/dev/workspace/DataMiningProjectThree/mushroom.arff");
+        //Matrix matrix = ARFFParser.loadARFF("/Users/dev/workspace/DataMiningProjectThree/mushroom.arff");
+        Matrix matrix = ARFFParser.loadARFF(args[0]);
 
         final int featuresStart = 0, featuresEnd = 22;
         final int labelsStart = 22, labelsEnd = 23;

@@ -1,3 +1,5 @@
+package ml.projectthree;
+
 import ml.MLException;
 import ml.Matrix;
 import ml.SupervisedLearner;
@@ -32,6 +34,6 @@ public class DecisionTreeLearner extends SupervisedLearner {
     }
 
     public void printTree() {
-        tree.prettyPrint();
+        tree.prettyPrint(new StringBuilder(), "");
     }
 }
